@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Strata Planning Suite</title>
+<meta name="description" content="Forensic rail-planning software — Gantt editor, linear schedule, AI roadmaps, delay analysis.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Thème sombre FIXE (ne change jamais). Palette dérivée du logo Strata. */
+:root{
+  --bg:#070d18; --panel:#101a2c; --ink:#eef3fb; --muted:#9fb0cc; --line:#223148;
+  --l1:#6fb0ff; --l2:#3f88cf; --l3:#2a6aae; --l4:#1b4d82;
+  --accent:#5AA0F2; --accent-ink:#06101f;
+  --radius:14px; --maxw:1060px;
+  --f-display:"Archivo","Segoe UI",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);line-height:1.55;margin:0;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin-inline:auto;padding-inline:20px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+.eyebrow{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+
+/* ---- top bar ---- */
+header.top{position:sticky;top:0;z-index:20;backdrop-filter:blur(10px);
+  background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;padding-block:12px}
+.brand{display:flex;align-items:center;gap:11px;font-family:var(--f-display);font-weight:800;font-size:1.15rem}
+.mark{width:26px;height:26px;flex:0 0 auto}
+.spacer{flex:1}
+.btn{display:inline-flex;align-items:center;gap:9px;font-family:var(--f-display);font-weight:700;
+  font-size:.95rem;border-radius:11px;padding:11px 18px;border:1px solid transparent;cursor:pointer;
+  transition:transform .08s ease}
+.btn:hover{text-decoration:none;transform:translateY(-1px)}
+.btn-primary{background:var(--accent);color:var(--accent-ink)}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+
+/* ---- hero avec image de fond ---- */
+.hero{position:relative;overflow:hidden;padding-block:clamp(56px,10vw,120px)}
+.hero::before{content:"";position:absolute;inset:0;z-index:0;
+  background:
+    linear-gradient(90deg, rgba(7,13,24,.97) 0%, rgba(7,13,24,.88) 38%, rgba(7,13,24,.55) 72%, rgba(7,13,24,.40) 100%),
+    linear-gradient(0deg, var(--bg) 2%, rgba(7,13,24,0) 30%),
+    url("assets/hero.jpg") center right / cover no-repeat;}
+.hero .wrap{position:relative;z-index:1}
+.hero h1{font-size:clamp(2.1rem,5.4vw,3.6rem);font-weight:800;letter-spacing:-.02em;max-width:16ch}
+.hero p.lead{color:#cdd8ec;font-size:clamp(1.05rem,2vw,1.2rem);max-width:46ch;margin:18px 0 26px}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.cta-note{font-size:.84rem;color:#aebbd4;margin-top:14px;max-width:46ch}
+.cta-note b{color:var(--ink)}
+
+/* ---- sections ---- */
+section{padding-block:clamp(34px,6vw,60px)}
+.sec-head{max-width:60ch;margin-bottom:28px}
+.sec-head h2{font-size:clamp(1.5rem,3.4vw,2.1rem);font-weight:700;margin-top:8px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;min-width:0}
+.card .k{display:flex;align-items:center;gap:9px;font-family:var(--f-display);font-weight:700;font-size:1.02rem;margin-bottom:6px}
+.card .k .dot{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+.card p{margin:0;color:var(--muted);font-size:.92rem}
+
+/* ---- panneau licence ---- */
+.license{background:var(--panel);border:1px solid var(--line);border-radius:18px;
+  padding:clamp(22px,4vw,36px);display:grid;grid-template-columns:1fr 1fr;gap:34px}
+.license .why li{margin:9px 0;padding-left:26px;position:relative;color:var(--muted)}
+.license .why li::before{content:"";position:absolute;left:0;top:7px;width:12px;height:12px;border-radius:3px;background:var(--l2)}
+.license .why li b{color:var(--ink)}
+form{display:flex;flex-direction:column;gap:13px}
+label{font-size:.82rem;font-weight:600;color:var(--ink);display:block;margin-bottom:5px}
+.field input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+  padding:11px 13px;color:var(--ink);font:inherit;font-size:.95rem}
+.field input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.consent{display:flex;gap:9px;align-items:flex-start;font-size:.8rem;color:var(--muted)}
+.consent input{margin-top:3px}
+.form-note{font-size:.78rem;color:var(--muted)}
+.ok-msg{background:color-mix(in srgb,#1C9D6B 16%,transparent);border:1px solid color-mix(in srgb,#1C9D6B 50%,var(--line));
+  color:var(--ink);border-radius:12px;padding:16px 18px;font-size:.92rem}
+.keybox{margin:10px 0;background:var(--bg);border:1px dashed var(--accent);border-radius:10px;padding:12px 14px;text-align:center}
+.keybox code{font-family:var(--f-mono);font-size:1.05rem;letter-spacing:.02em;color:#bfe3cf;word-break:break-all}
+.err-msg{background:color-mix(in srgb,#C0392B 16%,transparent);border:1px solid color-mix(in srgb,#C0392B 50%,var(--line));
+  color:#ffd9d4;border-radius:10px;padding:12px 14px;font-size:.88rem}
+
+footer{border-top:1px solid var(--line);margin-top:40px;color:var(--muted);font-size:.85rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding-block:22px}
+
+@media (max-width:860px){ .grid{grid-template-columns:1fr 1fr} .license{grid-template-columns:1fr;gap:24px} }
+@media (max-width:520px){ .grid{grid-template-columns:1fr} .two{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 36 34" aria-hidden="true">
+        <rect x="4"  y="5"  width="28" height="5" rx="2" fill="var(--l1)"/>
+        <rect x="6"  y="12" width="24" height="5" rx="2" fill="var(--l2)"/>
+        <rect x="8"  y="19" width="20" height="5" rx="2" fill="var(--l3)"/>
+        <rect x="10" y="26" width="16" height="5" rx="2" fill="var(--l4)"/>
+      </svg>
+      Strata
+    </div>
+    <div class="spacer"></div>
+    <a class="btn btn-ghost" href="#license">Request a licence</a>
+    <a class="btn btn-primary" href="#download">Download</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">Forensic rail-planning software &middot; mirror for corporate networks</div>
+      <h1>Build, analyse and defend your schedule.</h1>
+      <p class="lead">Strata reads your Primavera P6 and MS Project files and turns them into
+        editable Gantt and linear schedules, AI-built executive roadmaps, monthly delay analysis
+        and board-ready KPIs &mdash; without leaving the desktop.</p>
+      <div class="cta-row" id="download">
+        <a class="btn btn-primary" href="https://github.com/GillesAuerbach/strata-planning-suite/releases/latest">&darr; Download Strata (Windows)</a>
+        <a class="btn btn-ghost" href="#license">Request a licence key</a>
+      </div>
+      <p class="cta-note">Windows 10/11 &middot; ~85&nbsp;MB &middot; activation key required &mdash;
+        <b>request one below</b> and it's emailed to you instantly.</p>
+      <p class="cta-note" style="margin-top:6px">Using the AI features?
+        <a href="download/Strata_Gemini_API_Setup.pdf">Read the Gemini API setup guide (PDF) &rarr;</a></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="eyebrow">What's inside</div>
+        <h2>Everything a planning team actually uses, in one tool.</h2>
+      </div>
+      <div class="grid">
+        <div class="card"><div class="k"><span class="dot" style="background:var(--l1)"></span>Gantt editor &amp; converter</div>
+          <p>Open P6 XER, edit activities, links and durations, recalculate the CPM, and convert P6 &harr; MS Project.</p></div>
+        <div class="card"><div class="k"><span class="dot" style="background:var(--l2)"></span>Linear schedule</div>
+          <p>Time-chainage / space-time view for corridor work, with Excel and PDF export.</p></div>
+        <div class="card"><div class="k"><span class="dot" style="background:var(--l3)"></span>AI roadmaps</div>
+          <p>High-level and deliverable roadmaps synthesised from your schedule, grouped by discipline, zone or package.</p></div>
+        <div class="card"><div class="k"><span class="dot" style="background:var(--l4)"></span>Delay analysis</div>
+          <p>Monthly collapsed as-built claim workflow and critical-path forensics, built for AACE-grade work.</p></div>
+        <div class="card"><div class="k"><span class="dot" style="background:var(--l2)"></span>Hot Topics &amp; KPIs</div>
+          <p>The month's most critical activities and S-curves, exportable straight to PowerPoint.</p></div>
+        <div class="card"><div class="k"><span class="dot" style="background:var(--l3)"></span>Quality &amp; risk</div>
+          <p>DCMA-style schedule quality checks and a Monte-Carlo risk run on your own network.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="license">
+    <div class="wrap">
+      <div class="license">
+        <div class="why">
+          <div class="eyebrow">Request a licence</div>
+          <h2 style="font-size:1.6rem;font-weight:700;margin:8px 0 16px">A 6-month key, emailed instantly.</h2>
+          <ul style="list-style:none;padding:0;margin:0">
+            <li><b>Tell us who you are.</b> First name, last name and email &mdash; that's it.</li>
+            <li><b>Get your key now.</b> A unique 6-month key is generated and emailed to you right away.</li>
+            <li><b>Activate once.</b> Paste the key into Strata; it checks in online and you're running.</li>
+          </ul>
+          <p class="form-note" style="margin-top:18px">Your details are used only to issue and manage
+            your licence key. No marketing, no sharing.</p>
+        </div>
+
+        <div>
+          <form id="licForm" method="post" action="https://script.google.com/macros/s/AKfycbxyp27A9oky_dwRa7-6XTBQy8vf1deFfY3J3n_h-LfUufle9AxXOTXp7maH9GcEnhcveg/exec" novalidate>
+            <div class="two">
+              <div class="field"><label for="firstname">First name</label>
+                <input id="firstname" name="firstname" type="text" autocomplete="given-name" required maxlength="40"></div>
+              <div class="field"><label for="lastname">Last name</label>
+                <input id="lastname" name="lastname" type="text" autocomplete="family-name" required maxlength="40"></div>
+            </div>
+            <div class="field"><label for="email">Work email</label>
+              <input id="email" name="email" type="email" autocomplete="email" required maxlength="120" placeholder="you@company.com"></div>
+            <div class="field"><label for="company">Organisation (optional)</label>
+              <input id="company" name="company" type="text" autocomplete="organization" maxlength="100"></div>
+            <!-- honeypot: real users leave this empty -->
+            <div class="hp" aria-hidden="true"><label>Leave this empty<input name="website" tabindex="-1" autocomplete="off"></label></div>
+            <label class="consent"><input type="checkbox" name="consent" required>
+              I agree that my details may be used to issue and manage a Strata licence key.</label>
+            <button class="btn btn-primary" type="submit" style="justify-content:center">Get my licence key</button>
+            <p class="form-note">The key appears here and is sent to your email instantly.</p>
+          </form>
+
+          <div class="ok-msg" id="okMsg" hidden>
+            <b>Here's your licence key</b> &mdash; valid 6 months. Paste it into Strata to activate:
+            <div class="keybox"><code id="okCode"></code></div>
+            A copy has also been emailed to you.
+          </div>
+          <div class="err-msg" id="errMsg" hidden></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="brand" style="font-size:1rem">
+      <svg class="mark" viewBox="0 0 36 34" aria-hidden="true" style="width:20px;height:20px">
+        <rect x="4" y="5" width="28" height="5" rx="2" fill="var(--l1)"/>
+        <rect x="6" y="12" width="24" height="5" rx="2" fill="var(--l2)"/>
+        <rect x="8" y="19" width="20" height="5" rx="2" fill="var(--l3)"/>
+        <rect x="10" y="26" width="16" height="5" rx="2" fill="var(--l4)"/>
+      </svg>Strata Planning Suite
+    </div>
+    <div class="spacer"></div>
+    <span>Main site: <a href="https://www.strata.auerbach.be">strata.auerbach.be</a> &middot; &copy; <span id="yr"></span> &middot; Contact: <a href="mailto:gilles@auerbach.be">gilles@auerbach.be</a></span>
+  </div>
+</footer>
+
+<script>
+document.getElementById('yr').textContent = new Date().getFullYear();
+
+/* AJAX submit : affiche la clé renvoyée. Fallback POST classique si fetch échoue. */
+(function(){
+  var f=document.getElementById('licForm'), ok=document.getElementById('okMsg'),
+      okCode=document.getElementById('okCode'), err=document.getElementById('errMsg');
+  f.addEventListener('submit',function(ev){
+    if(f.website && f.website.value){ev.preventDefault();return;}        // bot
+    if(!f.checkValidity())return;                                         // le navigateur signale
+    ev.preventDefault();
+    err.hidden=true;
+    var btn=f.querySelector('button[type=submit]'); btn.disabled=true; btn.textContent='Generating…';
+    fetch(f.action,{method:'POST',body:new URLSearchParams(new FormData(f))})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(d && d.ok && d.code){
+          okCode.textContent=d.code; f.hidden=true; ok.hidden=false;
+          ok.scrollIntoView({behavior:'smooth',block:'center'});
+        }else{
+          err.textContent=(d && d.error) ? d.error : 'Something went wrong. Please try again.';
+          err.hidden=false; btn.disabled=false; btn.textContent='Get my licence key';
+        }
+      })
+      .catch(function(){
+        err.textContent='Could not reach the licence service. Please try again in a minute, or email gilles@auerbach.be.';
+        err.hidden=false; btn.disabled=false; btn.textContent='Get my licence key';
+      });
+  });
+})();
+</script>
+</body>
+</html>
